@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Add these custom animations */
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 5s linear infinite;
+  }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  .animate-spin-reverse {
+    animation: spin 7s linear infinite reverse;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .animate-spin-slower {
+    animation: spin 9s linear infinite;
+  }
+
+  .animate-grid {
+    animation: moveGrid 40s linear infinite;
+  }
+
+  .animate-pulse-fast {
+    animation: pulse 0.5s ease-in-out;
+  }
+
+  .animate-pulse-medium {
+    animation: pulse 0.7s ease-in-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 0.9s ease-in-out;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes moveGrid {
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 100%; }
+}
+
+/* Custom width classes */
+@layer utilities {
+  .w-92 {
+    width: 23rem;
+  }
+  .h-92 {
+    height: 23rem;
+  }
+  .w-88 {
+    width: 22rem;
+  }
+  .h-88 {
+    height: 22rem;
+  }
 }
