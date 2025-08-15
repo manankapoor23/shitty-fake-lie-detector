@@ -1,129 +1,138 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+type State = 'neutral' | 'truth' | 'lie';
 
 export default function LieDetector() {
-    const [state, setState] = useState<'neutral' | 'truth' | 'lie'>('neutral');
-    const [displayText, setDisplayText] = useState('');
-    const [showText, setShowText] = useState(false);
-    const [variant, setVariant] = useState<'neutral' | 'truth' | 'lie'>('neutral');
+    const [state, setState] = useState<State>('neutral');
+    const [isPressed, setIsPressed] = useState(false);
+    const truthAudioRef = useRef<HTMLAudioElement>(null);
+    const lieAudioRef = useRef<HTMLAudioElement>(null);
 
-    // Handle keyboard events
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.code === 'Enter') {
-                setState('truth');
-                setVariant('truth');
-                setDisplayText('Truth');
-                setShowText(true);
+            if (event.repeat) return; // Ignore repeat events
 
-                setTimeout(() => {
-                    setState('neutral');
-                    setVariant('neutral');
-                    setShowText(false);
-                }, 2000);
-            } else if (event.code === 'Space') {
+            if (event.code === 'Enter' && !isPressed) {
+                setState('truth');
+                setIsPressed(true);
+                truthAudioRef.current?.play();
+            } else if (event.code === 'Space' && !isPressed) {
                 event.preventDefault();
                 setState('lie');
-                setVariant('lie');
-                setDisplayText('Lie');
-                setShowText(true);
+                setIsPressed(true);
+                lieAudioRef.current?.play();
+            }
+        };
 
-                setTimeout(() => {
-                    setState('neutral');
-                    setVariant('neutral');
-                    setShowText(false);
-                }, 2000);
+        const handleKeyUp = (event: KeyboardEvent) => {
+            if (event.code === 'Enter' || event.code === 'Space') {
+                setState('neutral');
+                setIsPressed(false);
+                // Stop and reset audio
+                if (truthAudioRef.current) {
+                    truthAudioRef.current.pause();
+                    truthAudioRef.current.currentTime = 0;
+                }
+                if (lieAudioRef.current) {
+                    lieAudioRef.current.pause();
+                    lieAudioRef.current.currentTime = 0;
+                }
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+        window.addEventListener('keyup', handleKeyUp);
 
-    const getCircleColors = () => {
-        switch (variant) {
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [isPressed]);
+
+    const getStyles = () => {
+        switch (state) {
             case 'truth':
                 return {
-                    border: 'border-green-400/60',
+                    border: 'border-green-400',
                     bg: 'bg-green-500/20',
-                    shadow: 'shadow-green-500/30',
                     text: 'text-green-400',
-                    glow: 'drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]'
+                    glow: 'drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]',
+                    label: 'TRUTH'
                 };
             case 'lie':
                 return {
-                    border: 'border-red-400/60',
+                    border: 'border-red-400',
                     bg: 'bg-red-500/20',
-                    shadow: 'shadow-red-500/30',
                     text: 'text-red-400',
-                    glow: 'drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]'
+                    glow: 'drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]',
+                    label: 'LIE'
                 };
             default:
                 return {
                     border: 'border-gray-400/40',
                     bg: 'bg-gray-500/10',
-                    shadow: 'shadow-gray-500/20',
                     text: 'text-gray-400',
-                    glow: ''
+                    glow: '',
+                    label: ''
                 };
         }
     };
 
-    const colors = getCircleColors();
+    const styles = getStyles();
 
     return (
-        <div className="relative h-screen w-full bg-black overflow-hidden flex items-center justify-center">
-            {/* Animated grid background */}
-            <div
-                className="absolute inset-0 opacity-20 animate-grid"
-                style={{
-                    backgroundImage: 'repeating-linear-gradient(100deg, #64748B 0%, #64748B 1px, transparent 1px, transparent 4%)'
-                }}
-            />
+        <div className="relative h-screen w-full bg-black flex items-center justify-center">
+            {/* Audio elements */}
+            <audio ref={truthAudioRef} preload="auto" loop>
+                <source src="/truth.mp3" type="audio/mpeg" />
+            </audio>
+            <audio ref={lieAudioRef} preload="auto" loop>
+                <source src="/lie.mp3" type="audio/mpeg" />
+            </audio>
 
-            {/* Main circle container */}
+            {/* Main circle */}
             <div className="relative">
-                {/* Outer circle */}
-                <div
-                    className={`absolute inset-0 w-96 h-96 rounded-full border-2 ${colors.border} ${colors.bg} ${colors.shadow} shadow-2xl transition-all duration-500 ${
-                        showText ? 'animate-pulse-fast' : 'animate-spin-slow'
-                    }`}
-                />
-
-                {/* Middle circle */}
-                <div
-                    className={`absolute inset-2 w-92 h-92 rounded-full border border-opacity-40 ${colors.border} transition-all duration-500 ${
-                        showText ? 'animate-pulse-medium' : 'animate-spin-reverse'
-                    }`}
-                />
-
-                {/* Inner circle */}
-                <div
-                    className={`absolute inset-4 w-88 h-88 rounded-full border border-opacity-20 ${colors.border} transition-all duration-500 ${
-                        showText ? 'animate-pulse-slow' : 'animate-spin-slower'
-                    }`}
-                />
+                <div className={`w-96 h-96 rounded-full border-2 ${styles.border} ${styles.bg} transition-all duration-300 animate-spin-slow`} />
 
                 {/* Center content */}
-                <div className="w-96 h-96 flex items-center justify-center relative z-10">
-                    {showText ? (
-                        <div
-                            className={`text-center transition-all duration-300 ${
-                                showText ? 'scale-110 opacity-100' : 'scale-100 opacity-0'
-                            }`}
-                        >
-                            <h2 className={`text-8xl md:text-9xl font-black tracking-wider ${colors.text} ${colors.glow}`}>
-                                {displayText.toUpperCase()}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                        {state !== 'neutral' ? (
+                            <h2 className={`text-7xl font-black ${styles.text} ${styles.glow}`}>
+                                {styles.label}
                             </h2>
-                        </div>
-                    ) : (
-                        <div className="text-center">
-                            <h1 className="text-5xl font-bold tracking-tight text-white mb-4 bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent"></h1>
-                        </div>
-                    )}
+                        ) : (
+                            <>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Instructions */}
+            {/*<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">*/}
+            {/*    <div className="bg-black/50 backdrop-blur rounded-lg px-6 py-3 border border-gray-700/50">*/}
+            {/*        <p className="text-white text-sm">*/}
+            {/*            <kbd className="px-2 py-1 bg-white/10 rounded mr-2">ENTER</kbd>*/}
+            {/*            Truth*/}
+            {/*            <span className="mx-4">•</span>*/}
+            {/*            <kbd className="px-2 py-1 bg-white/10 rounded mr-2">SPACE</kbd>*/}
+            {/*            Lie*/}
+            {/*        </p>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+
+            <style jsx>{`
+                @keyframes spin-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .animate-spin-slow {
+                    animation: spin-slow 8s linear infinite;
+                }
+            `}</style>
         </div>
     );
 }
