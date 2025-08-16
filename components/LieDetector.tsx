@@ -9,41 +9,30 @@ export default function LieDetector() {
     const [isPressed, setIsPressed] = useState(false);
     const truthAudioRef = useRef<HTMLAudioElement>(null);
     const lieAudioRef = useRef<HTMLAudioElement>(null);
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.repeat) return;
-    
+
             if (event.code === 'Enter' && !isPressed) {
                 setState('truth');
                 setIsPressed(true);
-    
+
                 if (truthAudioRef.current) {
-                    truthAudioRef.current.currentTime = 0; // restart from beginning
+                    truthAudioRef.current.currentTime = 0;
                     truthAudioRef.current.play().catch(err => console.log("Truth audio blocked:", err));
                 }
             } else if (event.code === 'Space' && !isPressed) {
                 event.preventDefault();
                 setState('lie');
                 setIsPressed(true);
-    
+
                 if (lieAudioRef.current) {
-                    lieAudioRef.current.currentTime = 0; // restart from beginning
+                    lieAudioRef.current.currentTime = 0;
                     lieAudioRef.current.play().catch(err => console.log("Lie audio blocked:", err));
                 }
             }
         };
-    
-        const handleKeyUp = () => setIsPressed(false);
-    
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-    
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-        };
-    }, [isPressed]);
-    
 
         const handleKeyUp = (event: KeyboardEvent) => {
             if (event.code === 'Enter' || event.code === 'Space') {
@@ -80,11 +69,11 @@ export default function LieDetector() {
             <div className="absolute inset-0 bg-black/50" />
 
             {/* Audio elements */}
-            <audio ref={truthAudioRef} preload="auto" loop>
-                <source src="public/truth.mp3" type="audio/mpeg" />
+            <audio ref={truthAudioRef} preload="auto">
+                <source src="/truth.mp3" type="audio/mpeg" />
             </audio>
-            <audio ref={lieAudioRef} preload="auto" loop>
-                <source src="public/lie.mp3" type="audio/mpeg" />
+            <audio ref={lieAudioRef} preload="auto">
+                <source src="/lie.mp3" type="audio/mpeg" />
             </audio>
 
             {/* Lens */}
