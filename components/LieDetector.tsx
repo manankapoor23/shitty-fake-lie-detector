@@ -86,7 +86,7 @@ export default function LieDetector() {
                         ${state === 'truth' ? "border-green-500 shadow-[0_0_50px_20px_rgba(34,197,94,0.7)]" : ""}
                         ${state === 'lie' ? "border-red-500 shadow-[0_0_50px_20px_rgba(239,68,68,0.7)]" : ""}
                         ${state === 'neutral' ? "border-gray-700 shadow-[0_0_40px_rgba(0,0,0,0.6)]" : ""}
-                        animate-spin-slow
+    
                     `}
                     style={{
                         background: "radial-gradient(circle at 30% 30%, #111 0%, #000 70%)"
@@ -121,9 +121,7 @@ export default function LieDetector() {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
                 }
-                .animate-spin-slow {
-                    animation: spin-slow 15s linear infinite;
-                }
+
             `}</style>
         </div>
     );
